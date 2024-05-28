@@ -1,16 +1,104 @@
-# This is a sample Python script.
-
-# Press ⌃R to execute it or replace it with your code.
-# Press Double ⇧ to search everywhere for classes, files, tool windows, actions, and settings.
-
-
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press ⌘F8 to toggle the breakpoint.
+from sqlalchemy import (create_engine, Column, Integer, String,
+                        insert, update, Sequence, Date, MetaData, delete, Table)
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy import or_, and_
+from sqlalchemy.orm import declarative_base
+from sqlalchemy.sql import text
 
 
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
+username = 'postgres'
+db_password = 134472
 
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+db_url = f'postgresql+psycopg2://{username}:{db_password}@localhost:5432/academy'
+engine = create_engine(db_url)
+
+metadata = MetaData()
+metadata.reflect(bind=engine)
+
+Session = sessionmaker(bind=engine)
+session = Session()
+
+tables = {
+    "curators": metadata.tables["curators"],
+    "departments": metadata.tables["departments"],
+    "faculties": metadata.tables["faculties"],
+    "group_curators": metadata.tables["group_curators"],
+    "groups": metadata.tables["groups"],
+    "groups_lectures": metadata.tables["groups_lectures"],
+    "lectures": metadata.tables["lectures"],
+    "subjects": metadata.tables["subjects"],
+    "teachers": metadata.tables["teachers"],
+    "users": metadata.tables["users"]
+}
+
+
+
+print("What do you want to do?")
+print("Press 0 to add exit")
+print("Press 1 to add row")
+print("Press 2 to delete row")
+
+command = int(input("Input command: "))
+
+if command == 1:
+    table_name = input("Input table name to insert data: ")
+
+    if table_name in tables:
+        users_table = metadata.tables[table_name]
+        columns = users_table.columns.keys()
+        new_record = {}
+
+        for column in columns:
+            new_value = input(f"Input new value for {column}: ")
+            new_record[column] = new_value
+
+        inserted_values = insert(users_table).values(new_record)
+
+        session.execute(inserted_values)
+        session.commit()
+
+elif command == 2:
+    table_name = input("Input table name to delete data: ")
+
+    if table_name in tables:
+        users_table = metadata.tables[table_name]
+        index_column = input("Input index column name: ")
+        index_value = input("Input index value to delete: ")
+
+        delete_query = delete(users_table).where(users_table.columns[index_column] == index_value)
+
+        session.execute(delete_query)
+        session.commit()
+
+    ...
+
+
+
+
+
+# curs = metadata.tables["curators"]
+# deps = metadata.tables["departments"]
+# facs = metadata.tables["faculties"]
+# g_curs = metadata.tables["group_curators"]
+# groups = metadata.tables["groups"]
+# g_lecs = metadata.tables["groups_lectures"]
+# lecs = metadata.tables["lectures"]
+# subj = metadata.tables["subjects"]
+# teach = metadata.tables["teachers"]
+# users = metadata.tables["users"]
+#
+#
+# table = metadata.tables["curators"]
+# results = session.query(table).all()
+# columns = table.columns.keys()
+#
+# for column in columns:
+#     print(column)
+
+# # Получение названий колонок
+# columns = table.columns.keys()
+
+
+
+
+
