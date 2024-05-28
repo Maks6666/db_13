@@ -18,87 +18,145 @@ metadata.reflect(bind=engine)
 Session = sessionmaker(bind=engine)
 session = Session()
 
-tables = {
-    "curators": metadata.tables["curators"],
-    "departments": metadata.tables["departments"],
-    "faculties": metadata.tables["faculties"],
-    "group_curators": metadata.tables["group_curators"],
-    "groups": metadata.tables["groups"],
-    "groups_lectures": metadata.tables["groups_lectures"],
-    "lectures": metadata.tables["lectures"],
-    "subjects": metadata.tables["subjects"],
-    "teachers": metadata.tables["teachers"],
-    "users": metadata.tables["users"]
-}
+curs = metadata.tables["curators"]
+deps = metadata.tables["departments"]
+facs = metadata.tables["faculties"]
+g_curs = metadata.tables["group_curators"]
+groups = metadata.tables["groups"]
+g_lecs = metadata.tables["groups_lectures"]
+lecs = metadata.tables["lectures"]
+subj = metadata.tables["subjects"]
+teach = metadata.tables["teachers"]
+users = metadata.tables["users"]
 
+
+def all_groups_info():
+    results = session.query(groups).all()
+
+    if results:
+        for result in results:
+            print(result)
+
+def all_teach_info():
+    results = session.query(teach).all()
+
+    if results:
+        for result in results:
+            print(result)
+
+
+
+def deps_names():
+    results = session.query(deps.c.name)
+
+    if results:
+        for result in results:
+            print(result)
+
+
+def teach_names_per_group():
+    results = (session.query(teach.c.name,
+                            teach.c.surname, groups.c.name_group).join(lecs, lecs.c.teacher_id == teach.c.id)
+               .join(g_lecs, g_lecs.c.id_lecture == lecs.c.id)
+               .join(groups, groups.c.id == g_lecs.c.id_group))
+
+    if results:
+        for result in results:
+            print(f"{result.name} {result.surname} teaches group: {result.name_group}")
+
+
+def groups_of_deps():
+    results = session.query(groups.c.name_group, deps.c.name).join(groups, groups.c.department_id == deps.c.id)
+    if results:
+        for result in results:
+            print(f"{result.name_group} group belongs to {result.name} department")
+
+
+def subj_per_teach():
+    results = (session.query(teach.c.name,
+                             teach.c.surname, subj.c.subject_name)
+               .join(lecs, lecs.c.teacher_id == teach.c.id)
+               .join(subj, subj.c.id == lecs.c.subject_id))
+
+    if results:
+        for result in results:
+            print(f"{result.name} {result.surname} teaches: {result.subject_name}")
+
+
+
+
+def deps_of_subj():
+    results = (session.query(subj.c.subject_name, deps.c.name)
+               .join(lecs, lecs.c.subject_id == subj.c.id)
+               .join(g_lecs, g_lecs.c.id_lecture == lecs.c.id)
+               .join(groups, groups.c.id == g_lecs.c.id_group)
+               .join(deps, deps.c.id == groups.c.department_id))
+
+    if results:
+        for result in results:
+            print(f"You may study {result.subject_name} on {result.name}")
+
+def groups_of_facs():
+    results = (session.query(groups.c.name_group, facs.c.facult_name)
+               .join(deps, deps.c.id == groups.c.department_id)
+               .join(facs, facs.c.id == deps.c.faculties_id))
+
+    if results:
+        for result in results:
+            print(f"{result.name_group} studies on {result.facult_name}")
 
 
 print("What do you want to do?")
 print("Press 0 to add exit")
-print("Press 1 to add row")
-print("Press 2 to delete row")
+print("Press 1 to output all group info")
+print("Press 2 to output all teacher info")
+print("Press 3 to output names of departments")
+print("Press 4 to output teachers names per group")
+print("Press 5 to output ammount of departments per each group")
+print("Press 6 to output subject name per each teacher")
+print("Press 7 to output departments with theirs subjects")
+print("Press 8 to output faculties and their groups")
+
 
 command = int(input("Input command: "))
 
-if command == 1:
-    table_name = input("Input table name to insert data: ")
+while True:
+    if command == 1:
+        all_groups_info()
+        break
 
-    if table_name in tables:
-        users_table = metadata.tables[table_name]
-        columns = users_table.columns.keys()
-        new_record = {}
+    elif command == 2:
+        all_teach_info()
+        break
 
-        for column in columns:
-            new_value = input(f"Input new value for {column}: ")
-            new_record[column] = new_value
+    elif command == 3:
+        deps_names()
+        break
 
-        inserted_values = insert(users_table).values(new_record)
+    elif command == 4:
+        teach_names_per_group()
+        break
 
-        session.execute(inserted_values)
-        session.commit()
+    elif command == 5:
+        groups_of_deps()
+        break
 
-elif command == 2:
-    table_name = input("Input table name to delete data: ")
+    elif command == 6:
+        subj_per_teach()
+        break
 
-    if table_name in tables:
-        users_table = metadata.tables[table_name]
-        index_column = input("Input index column name: ")
-        index_value = input("Input index value to delete: ")
+    elif command == 7:
+        deps_of_subj()
+        break
 
-        delete_query = delete(users_table).where(users_table.columns[index_column] == index_value)
+    elif command == 8:
+        groups_of_facs()
+        break
 
-        session.execute(delete_query)
-        session.commit()
+    elif command == 0:
+        break
 
-    ...
-
-
-
-
-
-# curs = metadata.tables["curators"]
-# deps = metadata.tables["departments"]
-# facs = metadata.tables["faculties"]
-# g_curs = metadata.tables["group_curators"]
-# groups = metadata.tables["groups"]
-# g_lecs = metadata.tables["groups_lectures"]
-# lecs = metadata.tables["lectures"]
-# subj = metadata.tables["subjects"]
-# teach = metadata.tables["teachers"]
-# users = metadata.tables["users"]
-#
-#
-# table = metadata.tables["curators"]
-# results = session.query(table).all()
-# columns = table.columns.keys()
-#
-# for column in columns:
-#     print(column)
-
-# # Получение названий колонок
-# columns = table.columns.keys()
-
-
-
+    else:
+        raise Exception("Wrong command, try again")
 
 
