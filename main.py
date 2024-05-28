@@ -76,29 +76,3 @@ elif command == 2:
 
 
 
-# curs = metadata.tables["curators"]
-# deps = metadata.tables["departments"]
-# facs = metadata.tables["faculties"]
-# g_curs = metadata.tables["group_curators"]
-# groups = metadata.tables["groups"]
-# g_lecs = metadata.tables["groups_lectures"]
-# lecs = metadata.tables["lectures"]
-# subj = metadata.tables["subjects"]
-# teach = metadata.tables["teachers"]
-# users = metadata.tables["users"]
-#
-#
-# table = metadata.tables["curators"]
-# results = session.query(table).all()
-# columns = table.columns.keys()
-#
-# for column in columns:
-#     print(column)
-
-# # Получение названий колонок
-# columns = table.columns.keys()
-
-
-
-
-
